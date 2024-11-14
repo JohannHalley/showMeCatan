@@ -1,0 +1,9 @@
+创建一个google chrome的插件。
+插件的功能是在页面右下角固定一个信息展示框，展示当前其他人的手牌情况（五种资源）。
+- 因为游戏的logs是公开的，实时更新的，所以可以实时获取其他人的手牌情况。
+
+
+下面是游戏的logs，由log组成。
+’‘’
+<div id="logs" style="display: block;"><div class="log  log_replayable" id="log_220" style="height: auto; display: block; color: rgb(0, 0, 0);"><div class="roundedbox"><!--PNS--><span class="playername" style="color:#F7953D;">CPATOI</span><!--PNE--> 使用 <span style=" white-space: nowrap;"><div class="cat_log_token icon_lumber"></div><div class="cat_log_token icon_brick"></div><div class="cat_log_token icon_wool"></div><div class="cat_log_token icon_grain"></div></span> 造了一个村庄</div></div><div class="log  log_replayable" id="log_219" style="height: auto; display: block; color: rgb(0, 0, 0);"><div class="roundedbox">kkristina1400 获得 <span style=" white-space: nowrap;">2<div class="cat_log_token icon_lumber"></div>1<div class="cat_log_token icon_ore"></div></span></div></div><div class="log  log_replayable" id="log_218" style="height: auto; display: block; color: rgb(0, 0, 0);"><div class="roundedbox">GamerB612 什么都没得到</div></div><div class="log  log_replayable" id="log_217" style="height: auto; display: block; color: rgb(0, 0, 0);"><div class="roundedbox">CPATOI 获得 <span style=" white-space: nowrap;">2<div class="cat_log_token icon_ore"></div></span></div></div><div class="log  log_replayable" id="log_216" style="height: auto; display: block; color: rgb(0, 0, 0);"><div class="roundedbox"><!--PNS--><span class="playername" style="color:#F7953D;">CPATOI</span><!--PNE--> 掷骰: <span style=" white-space: nowrap;"><div class="cat_log_token icon_die icon_die2 icon_D1"></div><div class="cat_log_token icon_die icon_die3 icon_D2"></div></span></div></div><div class="log  
+‘’‘

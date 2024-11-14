@@ -1,0 +1,48 @@
+.resource-tracker {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  width: 280px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.resource-tracker.hidden {
+  display: none;
+}
+
+.player-resources {
+  margin-bottom: 8px;
+  padding: 8px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.player-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.resource-count {
+  display: inline-block;
+  margin-right: 12px;
+  background-color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid #eee;
+}
+
+.resource-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 3px;
+} 

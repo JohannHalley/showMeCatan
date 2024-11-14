@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "Catan Resource Tracker",
+    "version": "1.0",
+    "description": "Track resources of other players in Catan game",
+    "permissions": [
+        "activeTab"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "https://boardgamearena.com/*/catan*"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "css": [
+                "styles.css"
+            ]
+        }
+    ],
+    "action": {}
+}

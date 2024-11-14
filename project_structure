@@ -1,0 +1,5 @@
+catan-resource-tracker/
+├── manifest.json
+├── background.js
+├── content.js
+└── styles.css 
