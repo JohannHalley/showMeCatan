@@ -1,9 +1,57 @@
-创建一个google chrome的插件。
-插件的功能是在页面右下角固定一个信息展示框，展示当前其他人的手牌情况（五种资源）。
-- 因为游戏的logs是公开的，实时更新的，所以可以实时获取其他人的手牌情况。
+# Catan Resource Tracker Chrome 插件
 
+这是一个用于 BoardGameArena 卡坦岛游戏的 Chrome 插件。插件会在页面右下角显示一个资源追踪器,实时展示所有玩家的资源情况。
 
-下面是游戏的logs，由log组成。
-’‘’
-<div id="logs" style="display: block;"><div class="log  log_replayable" id="log_220" style="height: auto; display: block; color: rgb(0, 0, 0);"><div class="roundedbox"><!--PNS--><span class="playername" style="color:#F7953D;">CPATOI</span><!--PNE--> 使用 <span style=" white-space: nowrap;"><div class="cat_log_token icon_lumber"></div><div class="cat_log_token icon_brick"></div><div class="cat_log_token icon_wool"></div><div class="cat_log_token icon_grain"></div></span> 造了一个村庄</div></div><div class="log  log_replayable" id="log_219" style="height: auto; display: block; color: rgb(0, 0, 0);"><div class="roundedbox">kkristina1400 获得 <span style=" white-space: nowrap;">2<div class="cat_log_token icon_lumber"></div>1<div class="cat_log_token icon_ore"></div></span></div></div><div class="log  log_replayable" id="log_218" style="height: auto; display: block; color: rgb(0, 0, 0);"><div class="roundedbox">GamerB612 什么都没得到</div></div><div class="log  log_replayable" id="log_217" style="height: auto; display: block; color: rgb(0, 0, 0);"><div class="roundedbox">CPATOI 获得 <span style=" white-space: nowrap;">2<div class="cat_log_token icon_ore"></div></span></div></div><div class="log  log_replayable" id="log_216" style="height: auto; display: block; color: rgb(0, 0, 0);"><div class="roundedbox"><!--PNS--><span class="playername" style="color:#F7953D;">CPATOI</span><!--PNE--> 掷骰: <span style=" white-space: nowrap;"><div class="cat_log_token icon_die icon_die2 icon_D1"></div><div class="cat_log_token icon_die icon_die3 icon_D2"></div></span></div></div><div class="log  
-‘’‘
+## 功能特点
+
+- 在页面右下角固定显示资源追踪器
+- 实时监控游戏日志,自动更新玩家资源
+- 支持追踪的资源类型:
+  - 木材 🌲
+  - 砖块 🧱
+  - 羊毛 🐑
+  - 麦子 🌾
+  - 矿石 ⛰️
+  - 未知资源 ❓
+- 支持追踪的游戏行为:
+  - 获得资源
+  - 购买发展卡
+  - 升级城市
+  - 建造道路
+  - 建造村庄
+  - 银行交易
+  - 玩家间交易
+  - 资源弃置
+  - 偷取资源
+- 点击插件图标可以切换追踪器显示/隐藏
+
+## 安装方法
+
+1. 下载本项目代码
+2. 打开 Chrome 扩展程序页面 (chrome://extensions/)
+3. 开启"开发者模式"
+4. 点击"加载已解压的扩展程序"
+5. 选择本项目文件夹
+
+## 使用说明
+
+1. 进入 BoardGameArena 的卡坦岛游戏页面
+2. 资源追踪器会自动显示在右下角
+3. 可以通过点击插件图标来切换显示/隐藏
+
+## 项目结构
+catan-resource-tracker/
+├── manifest.json
+├── background.js
+├── content.js
+└── styles.css 
+
+## 已知问题和待办事项
+
+### 功能完善
+- [ ] 适配骑士扩展版本
+- [ ] 优化未知资源(?)的追踪，完善偷卡行为的识别
+- [ ] 添加多语言支持（目前仅支持中文）
+- [ ] 添加资源统计图表
+- [ ] 支持自定义显示位置
+- [ ] 优化界面样式
