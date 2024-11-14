@@ -1,6 +1,7 @@
 # Catan Resource Tracker Chrome 插件
 
 这是一个用于 BoardGameArena 卡坦岛游戏的 Chrome 插件。插件会在页面右下角显示一个资源追踪器,实时展示所有玩家的资源情况。
+![image](./assets/image.png)
 
 ## 功能特点
 
@@ -40,11 +41,13 @@
 3. 可以通过点击插件图标来切换显示/隐藏
 
 ## 项目结构
+``` 
 catan-resource-tracker/
 ├── manifest.json
 ├── background.js
 ├── content.js
 └── styles.css 
+``` 
 
 ## 已知问题和待办事项
 
