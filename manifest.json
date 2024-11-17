@@ -4,7 +4,8 @@
     "version": "1.0",
     "description": "Track resources of other players in Catan game",
     "permissions": [
-        "activeTab"
+        "storage",
+        "management"
     ],
     "content_scripts": [
         {
@@ -19,5 +20,8 @@
             ]
         }
     ],
-    "action": {}
+    "action": {},
+    "background": {
+        "service_worker": "background.js"
+    }
 }

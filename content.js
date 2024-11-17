@@ -1,25 +1,121 @@
 class ResourceTracker {
+    static RESOURCES = {
+        LUMBER: { id: 'lumber', emoji: '🌲', icon: 'icon_lumber' },
+        BRICK: { id: 'brick', emoji: '🧱', icon: 'icon_brick' },
+        WOOL: { id: 'wool', emoji: '🐑', icon: 'icon_wool' },
+        GRAIN: { id: 'grain', emoji: '🌾', icon: 'icon_grain' },
+        ORE: { id: 'ore', emoji: '⛰️', icon: 'icon_ore' },
+        UNKNOWN: { id: 'unknown', emoji: '❓', icon: null }
+    };
+
+    static ACTIONS = {
+        BUILD_ROAD: { cost: { lumber: 1, brick: 1 } },
+        BUILD_SETTLEMENT: { cost: { lumber: 1, brick: 1, wool: 1, grain: 1 } },
+        BUILD_CITY: { cost: { grain: 2, ore: 3 } },
+        BUY_DEVELOPMENT_CARD: { cost: { wool: 1, grain: 1, ore: 1 } }
+    };
+
+    static LOG_HANDLERS = {
+        '获得': 'handleGain',
+        '失去': 'handleDiscard',
+        '买了一张发展卡': 'handleDevelopmentCard',
+        '升级为城市': 'handleUpgradeToCity',
+        '造了一条路': 'handleBuildRoad',
+        '造了一个村庄': 'handleBuildVillage',
+        '和银行交易': 'handleBankTransaction',
+        '交给': 'handleTradeWithPlayer',
+        '弃置': 'handleDiscard',
+        '偷取': 'handleStealResource'
+    };
+
     constructor() {
+        // 初始化玩家资源状态对象
         this.players = {};
-        this.resources = ['lumber', 'brick', 'wool', 'grain', 'ore', 'unknown'];
-        this.isVisible = true;
+        // 定义所有可能的资源类型，包括未知资源
+        this.resources = Object.values(ResourceTracker.RESOURCES).map(r => r.id);
+        // 用于追踪处理过的日志数量
         this.processCount = 0;
+        // 控制是否显示未知资源
         this.showUnknown = true;
-        this.setupTracker();
-        this.setupPlayerBoards();
-        this.setupLogObserver();
+
+        // 从 Chrome 存储中获取插件启用状态
+        chrome.storage.sync.get(['isTrackerEnabled'], (result) => {
+            // 如果没有存储状态，默认为启用
+            this.isEnabled = result.isTrackerEnabled ?? true;
+            if (this.isEnabled) {
+                this.setupTracker();      // 设置追踪器UI
+                this.setupPlayerBoards(); // 初始化玩家面板
+                this.setupLogObserver();  // ! 设置日志监听器
+            }
+        });
     }
 
     setupTracker() {
         this.trackerElement = document.createElement('div');
         this.trackerElement.className = 'resource-tracker';
+
+        // 设置初始位置
+        this.trackerElement.style.left = '20px';
+        this.trackerElement.style.top = '20px';
+
         document.body.appendChild(this.trackerElement);
+        this.setupDragging();
         this.updateDisplay();
 
-        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-            if (request.action === 'toggleTracker') {
-                this.toggleVisibility();
+        // 监听插件状态变化
+        chrome.storage.onChanged.addListener((changes, namespace) => {
+            if (namespace === 'sync' && changes.isTrackerEnabled) {
+                this.isEnabled = changes.isTrackerEnabled.newValue;
+                if (this.isEnabled) {
+                    this.trackerElement.style.display = 'block';
+                } else {
+                    this.trackerElement.style.display = 'none';
+                }
             }
+        });
+    }
+
+    setupDragging() {
+        let isDragging = false;
+        let startX;
+        let startY;
+        let startLeft;
+        let startTop;
+
+        this.trackerElement.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('close-button')) return;
+
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseInt(this.trackerElement.style.left) || 0;
+            startTop = parseInt(this.trackerElement.style.top) || 0;
+
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+
+            let newLeft = startLeft + deltaX;
+            let newTop = startTop + deltaY;
+
+            // 确保不会拖出屏幕
+            const maxX = window.innerWidth - this.trackerElement.offsetWidth;
+            const maxY = window.innerHeight - this.trackerElement.offsetHeight;
+
+            newLeft = Math.max(0, Math.min(newLeft, maxX));
+            newTop = Math.max(0, Math.min(newTop, maxY));
+
+            this.trackerElement.style.left = `${newLeft}px`;
+            this.trackerElement.style.top = `${newTop}px`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
         });
     }
 
@@ -45,11 +141,15 @@ class ResourceTracker {
     }
 
     setupLogObserver() {
+        // 获取日志容器元素
         const logsContainer = document.getElementById('logs');
         if (logsContainer) {
+            // 创建 MutationObserver 实例来监听日志变化
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
+                    // 遍历所有新增的节点
                     mutation.addedNodes.forEach((node) => {
+                        // 只处理元素节点(nodeType === 1)
                         if (node.nodeType === 1) {
                             this.processLogEntry(node);
                         }
@@ -57,6 +157,9 @@ class ResourceTracker {
                 });
             });
 
+            // 开始观察日志容器的变化
+            // childList: 监听子节点的增删
+            // subtree: 监听所有后代节点的变化
             observer.observe(logsContainer, {
                 childList: true,
                 subtree: true
@@ -65,7 +168,7 @@ class ResourceTracker {
     }
 
     processLogEntry(logNode) {
-        if (!logNode.querySelector) return; // 确保节点有 querySelector 方法
+        if (!logNode.querySelector) return;
 
         const roundedBox = logNode.querySelector('.roundedbox');
         if (!roundedBox) return;
@@ -73,69 +176,30 @@ class ResourceTracker {
         this.processCount++;
         const logText = roundedBox.textContent;
 
-        if (logText.includes('获得')) {
-            this.handleGain(roundedBox);
+        for (const [trigger, handler] of Object.entries(ResourceTracker.LOG_HANDLERS)) {
+            if (logText.includes(trigger)) {
+                this[handler](roundedBox);
+            }
         }
-
-        // 买了一张发展卡
-        if (logText.includes('买了一张发展卡')) {
-            this.handleDevelopmentCard(roundedBox);
-        }
-
-        // 升级为城市
-        if (logText.includes('升级为城市')) {
-            this.handleUpgradeToCity(roundedBox);
-        }
-
-        // 造了一条路
-        if (logText.includes('造了一条路')) {
-            this.handleBuildRoad(roundedBox);
-        }
-
-        // 造了一个村庄
-        if (logText.includes('造了一个村庄')) {
-            this.handleBuildVillage(roundedBox);
-        }
-
-        // 和银行交易
-        if (logText.includes('和银行交易')) {
-            this.handleBankTransaction(roundedBox);
-        }
-
-        // 和玩家交易
-        if (logText.includes('交给')) {
-            this.handleTradeWithPlayer(roundedBox);
-        }
-
-        // 弃置
-        if (logText.includes('弃置')) {
-            this.handleDiscard(roundedBox);
-        }
-
-        // 偷取资源
-        if (logText.includes('偷取')) {
-            this.handleStealResource(roundedBox);
-        }
-
-
 
         this.updateDisplay();
     }
 
     handleGain(logNode) {
-        console.log('Processing gain:', logNode.textContent); // 调试日志
+        console.log('Processing gain:', logNode.textContent);
 
-        // 获取玩家名称
+        // 从日志文本中提取玩家名称（在"获得"之前的文本）
         const playerName = logNode.textContent.split('获得')[0].trim();
         console.log('Player:', playerName);
 
-        // 获取资源信息
+        // 查找包含资源信息的 span 元素
         const resourceSpan = logNode.querySelector('span[style*="white-space: nowrap"]');
         if (!resourceSpan) {
             console.log('No resource span found');
             return;
         }
 
+        // 如果玩家不存在，则初始化该玩家的资源状态
         if (!this.players[playerName]) {
             console.log('Player not found, initializing:', playerName);
             this.players[playerName] = {
@@ -149,18 +213,18 @@ class ResourceTracker {
             };
         }
 
-        // 解析资源
-        let currentCount = 1;
+        // 解析资源获得情况
+        let currentCount = 1; // 默认数量为1
         const childNodes = Array.from(resourceSpan.childNodes);
         childNodes.forEach(node => {
             if (node.nodeType === Node.TEXT_NODE) {
-                // 如果是文本节点，可能包含数量
+                // 如果是文本节点，尝试解析数量
                 const num = parseInt(node.textContent);
                 if (!isNaN(num)) {
                     currentCount = num;
                 }
             } else if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('cat_log_token')) {
-                // 根据图标类名确定资源类型
+                // 根据资源图标的类名确定资源类型
                 let resourceType = null;
                 if (node.classList.contains('icon_lumber')) resourceType = 'lumber';
                 else if (node.classList.contains('icon_brick')) resourceType = 'brick';
@@ -168,6 +232,7 @@ class ResourceTracker {
                 else if (node.classList.contains('icon_grain')) resourceType = 'grain';
                 else if (node.classList.contains('icon_ore')) resourceType = 'ore';
 
+                // 更新玩家的资源数量
                 if (resourceType) {
                     this.players[playerName][resourceType] += currentCount;
                     console.log(`Added ${currentCount} ${resourceType} to ${playerName}`);
@@ -176,7 +241,7 @@ class ResourceTracker {
             }
         });
 
-        this.updateDisplay();
+        this.updateDisplay(); // 更新显示
     }
 
     updateDisplay() {
@@ -189,8 +254,14 @@ class ResourceTracker {
             'unknown': '❓'
         };
 
-        let html = `<div style="font-weight: bold; margin-bottom: 10px;">资源追踪器</div>`;
-        html += `<div style="margin-bottom: 10px;">处理日志次数: ${this.processCount}</div>`;
+        let html = `
+            <div class="tracker-header">
+                <div style="font-weight: bold;">资源追踪器</div>
+                <div class="close-button">✕</div>
+            </div>
+            <div style="margin-bottom: 10px;">处理日志次数: ${this.processCount}</div>
+        `;
+
         for (const [playerName, resources] of Object.entries(this.players)) {
             html += `
                 <div class="player-resources">
@@ -206,7 +277,11 @@ class ResourceTracker {
                 </div>
             `;
         }
+
         this.trackerElement.innerHTML = html;
+
+        const closeButton = this.trackerElement.querySelector('.close-button');
+        closeButton.addEventListener('click', () => this.toggleVisibility());
     }
 
     toggleVisibility() {
@@ -238,14 +313,13 @@ class ResourceTracker {
     }
 
     handleBuildRoad(logNode) {
-        // 建道路消耗：1木材 1砖块
         const playerName = logNode.textContent.split('使用')[0].trim();
         if (!this.players[playerName]) return;
-
-        this.players[playerName].lumber -= 1;
-        this.players[playerName].brick -= 1;
-
-        console.log(`${playerName} built road: -1 lumber, -1 brick`);
+        
+        const costs = ResourceTracker.ACTIONS.BUILD_ROAD.cost;
+        Object.entries(costs).forEach(([resource, amount]) => {
+            this.updatePlayerResource(playerName, resource, -amount);
+        });
     }
 
     handleBuildVillage(logNode) {
@@ -316,24 +390,25 @@ class ResourceTracker {
     }
 
     handleTradeWithPlayer(logNode) {
-        // 例如: "PanPrzestworzy 交给 pollyrigon 木材 并收到 麦子 作为交换"
+        // 解析交易日志，格式："玩家A 交给 玩家B 资源X 并收到 资源Y 作为交换"
         const logText = logNode.textContent;
         const parts = logText.split('交给');
         if (parts.length !== 2) return;
 
-        const giver = parts[0].trim();
+        // 提取交易双方信息
+        const giver = parts[0].trim(); // 给出资源的玩家
         const remainingText = parts[1];
         const receiverParts = remainingText.split('并收到');
         if (receiverParts.length !== 2) return;
 
         const receiverAndResource = receiverParts[0].trim();
-        const receiver = receiverAndResource.split(' ')[0];
+        const receiver = receiverAndResource.split(' ')[0]; // 接收资源的玩家
 
         // 获取交易的资源信息
         const resourceSpans = logNode.querySelectorAll('span[style*="white-space: nowrap"]');
         if (resourceSpans.length !== 2) return;
 
-        // 处理给出的资源
+        // 处理给出的资源（第一个资源span）
         let currentCount = 1;
         Array.from(resourceSpans[0].childNodes).forEach(node => {
             if (node.nodeType === Node.TEXT_NODE) {
@@ -349,7 +424,7 @@ class ResourceTracker {
             }
         });
 
-        // 处理收到的资源
+        // 处理收到的资源（第二个资源span）
         currentCount = 1;
         Array.from(resourceSpans[1].childNodes).forEach(node => {
             if (node.nodeType === Node.TEXT_NODE) {
@@ -426,5 +501,5 @@ class ResourceTracker {
     }
 }
 
-// 初始化追踪器
+// 创建资源追踪器实例
 const tracker = new ResourceTracker();
