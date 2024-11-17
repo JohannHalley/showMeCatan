@@ -13,6 +13,7 @@
                 "https://boardgamearena.com/*/catan*"
             ],
             "js": [
+                "dom-manager.js",
                 "content.js"
             ],
             "css": [
@@ -20,7 +21,9 @@
             ]
         }
     ],
-    "action": {},
+    "action": {
+        "default_popup": "popup.html"
+    },
     "background": {
         "service_worker": "background.js"
     }
