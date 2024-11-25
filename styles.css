@@ -1,13 +1,15 @@
 .resource-tracker {
   position: fixed;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.95);
   border: 1px solid #ccc;
-  padding: 10px;
+  padding: 8px;
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   z-index: 9999;
   cursor: move;
   user-select: none;
+  font-size: 14px;
+  min-width: 480px;
 }
 
 .resource-tracker.hidden {
@@ -18,14 +20,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #ccc;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #eee;
 }
 
 .close-button {
   cursor: pointer;
-  padding: 2px 6px;
+  padding: 1px 5px;
   border-radius: 3px;
   background-color: #ff4444;
   color: white;
@@ -37,31 +39,68 @@
 }
 
 .player-resources {
-  margin-bottom: 8px;
-  padding: 8px;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-}
-
-.player-name {
-  font-weight: bold;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.resource-count {
-  display: inline-block;
-  margin-right: 12px;
-  background-color: white;
-  padding: 3px 8px;
+  margin-bottom: 6px;
+  padding: 6px;
+  background-color: #f8f8f8;
   border-radius: 4px;
   border: 1px solid #eee;
 }
 
-.resource-icon {
-  width: 20px;
-  height: 20px;
+.player-name {
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: #333;
+  font-size: 13px;
+}
+
+.resources-container {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(75px, 1fr));
+  gap: 3px;
+}
+
+.resource {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: white;
+  padding: 2px 3px;
+  border-radius: 3px;
+  border: 1px solid #eee;
+}
+
+.resource-emoji {
+  width: 16px;
   display: inline-block;
-  vertical-align: middle;
-  margin-right: 3px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.adjust-btn {
+  padding: 0px 4px;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  background: #f8f8f8;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 16px;
+  min-width: 16px;
+}
+
+.adjust-btn:hover {
+  background: #e8e8e8;
+}
+
+.adjust-btn.minus {
+  color: #d32f2f;
+}
+
+.adjust-btn.plus {
+  color: #388e3c;
+}
+
+.count {
+  min-width: 16px;
+  text-align: center;
+  font-size: 12px;
 } 

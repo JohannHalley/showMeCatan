@@ -25,6 +25,10 @@
   - 资源弃置
   - 偷取资源
 - 点击插件图标可以切换追踪器显示/隐藏
+- 手动调整功能:
+  - 隐藏自己的资源情况
+  - 可以手动调整其他玩家的资源数量
+  - 通过 +/- 按钮精确控制资源数量
 
 ## 安装方法
 
@@ -59,3 +63,8 @@ catan-resource-tracker/
 - [ ] 支持自定义显示位置
 - [ ] 优化界面样式
 - [ ] 50步以内似乎没问题，超过50步可能加载不出logs
+- [ ] 如果没有偷到东西，bug。
+- [ ] 建造村庄资源计算错误: Deanblake has -1 unknown resources left
+- [ ] 偷取资源计算错误: AnimalMother83 has 0 unknown resources left
+- [ ] 现在update判断gain之后，有bug
+- [ ] 

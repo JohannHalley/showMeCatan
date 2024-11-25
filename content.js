@@ -35,6 +35,7 @@ class ResourceTracker {
         this.resources = Object.values(ResourceTracker.RESOURCES).map(r => r.id);
         this.processCount = 0;
         this.showUnknown = true;
+        this.currentPlayer = null;
 
         chrome.storage.sync.get(['isTrackerEnabled'], (result) => {
             this.isEnabled = result.isTrackerEnabled ?? true;
@@ -69,6 +70,11 @@ class ResourceTracker {
                 const playerName = playerNameElement.textContent.trim();
                 const playerColor = playerNameElement.style.color;
                 this.initializePlayer(playerName, playerColor);
+                
+                if (board.classList.contains('current')) {
+                    this.currentPlayer = playerName;
+                    console.log('Current player identified:', this.currentPlayer);
+                }
             }
         });
     }
@@ -289,39 +295,35 @@ class ResourceTracker {
         const resourceSpans = logNode.querySelectorAll('span[style*="white-space: nowrap"]');
         if (resourceSpans.length !== 2) return;
 
-        try {
-            let currentCount = 1;
-            Array.from(resourceSpans[0].childNodes).forEach(node => {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    const num = parseInt(node.textContent);
-                    if (!isNaN(num)) currentCount = num;
-                } else if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('cat_log_token')) {
-                    let resourceType = this.getResourceTypeFromIcon(node);
-                    if (resourceType) {
-                        this.updatePlayerResource(giver, resourceType, -currentCount);
-                        this.updatePlayerResource(receiver, resourceType, currentCount);
-                        currentCount = 1;
-                    }
+        let currentCount = 1;
+        Array.from(resourceSpans[0].childNodes).forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const num = parseInt(node.textContent);
+                if (!isNaN(num)) currentCount = num;
+            } else if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('cat_log_token')) {
+                let resourceType = this.getResourceTypeFromIcon(node);
+                if (resourceType) {
+                    this.updatePlayerResource(giver, resourceType, -currentCount);
+                    this.updatePlayerResource(receiver, resourceType, currentCount);
+                    currentCount = 1;
                 }
-            });
+            }
+        });
 
-            currentCount = 1;
-            Array.from(resourceSpans[1].childNodes).forEach(node => {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    const num = parseInt(node.textContent);
-                    if (!isNaN(num)) currentCount = num;
-                } else if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('cat_log_token')) {
-                    let resourceType = this.getResourceTypeFromIcon(node);
-                    if (resourceType) {
-                        this.updatePlayerResource(receiver, resourceType, -currentCount);
-                        this.updatePlayerResource(giver, resourceType, currentCount);
-                        currentCount = 1;
-                    }
+        currentCount = 1;
+        Array.from(resourceSpans[1].childNodes).forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const num = parseInt(node.textContent);
+                if (!isNaN(num)) currentCount = num;
+            } else if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('cat_log_token')) {
+                let resourceType = this.getResourceTypeFromIcon(node);
+                if (resourceType) {
+                    this.updatePlayerResource(receiver, resourceType, -currentCount);
+                    this.updatePlayerResource(giver, resourceType, currentCount);
+                    currentCount = 1;
                 }
-            });
-        } catch (error) {
-            console.log(`玩家交易资源计算错误: ${error.message}`);
-        }
+            }
+        });
 
         console.log(`Trade between ${giver} and ${receiver}`);
     }
@@ -364,35 +366,47 @@ class ResourceTracker {
         console.log(`${playerName} discarded resources`);
     }
 
+    /**
+     * 处理偷取资源的逻辑
+     * @param {HTMLElement} logNode - 包含偷取资源信息的日志节点
+     */
     handleStealResource(logNode) {
+        // 获取日志文本并分割
         const logText = logNode.textContent;
         const parts = logText.split('从');
         if (parts.length !== 2) return;
 
+        // 获取偷取者和被偷者
         const stealer = parts[0].trim();
         const victim = parts[1].split('处偷取')[0].trim();
 
+        // 检查玩家是否存在
         if (!this.players[stealer] || !this.players[victim]) return;
 
-        // 计算被偷者的非零资源数量
+        // 如果偷取者是当前玩家,等待获得资源的日志
+        if (stealer === this.currentPlayer) {
+            console.log('Current player is stealing, waiting for gain log...');
+            return;
+        }
+
+        // 获取被偷者拥有的资源列表
         const victimResources = ['lumber', 'brick', 'wool', 'grain', 'ore'];
         const nonZeroResources = victimResources.filter(resource =>
             this.players[victim][resource] > 0
         );
 
         try {
+            // 如果被偷者只有一种资源,直接更新该资源
             if (nonZeroResources.length === 1) {
                 const resource = nonZeroResources[0];
                 this.updatePlayerResource(victim, resource, -1);
                 this.updatePlayerResource(stealer, resource, 1);
                 console.log(`${stealer} stole 1 ${resource} from ${victim}`);
             } else {
-                nonZeroResources.forEach(resource => {
-                    this.updatePlayerResource(victim, resource, -1);
-                });
-                this.updatePlayerResource(victim, 'unknown', nonZeroResources.length - 1);
+                // 否则更新未知资源数量
+                this.updatePlayerResource(victim, 'unknown', -1);
                 this.updatePlayerResource(stealer, 'unknown', 1);
-                console.log(`${stealer} stole an unknown resource from ${victim}, who had ${nonZeroResources.length} types of resources`);
+                console.log(`${stealer} stole an unknown resource from ${victim}`);
             }
         } catch (error) {
             console.log(`偷取资源计算错误: ${error.message}`);

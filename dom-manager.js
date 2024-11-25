@@ -20,7 +20,7 @@ class DOMManager {
         let startX, startY, startLeft, startTop;
 
         this.trackerElement.addEventListener('mousedown', (e) => {
-            if (e.target.classList.contains('close-button')) return;
+            if (e.target.classList.contains('close-button') || e.target.classList.contains('adjust-btn')) return;
             isDragging = true;
             startX = e.clientX;
             startY = e.clientY;
@@ -63,27 +63,53 @@ class DOMManager {
                 <div style="font-weight: bold;">资源追踪器</div>
                 <div class="close-button">✕</div>
             </div>
-            <div style="margin-bottom: 10px;">处理日志次数: ${this.resourceTracker.processCount}</div>
         `;
 
         for (const [playerName, resources] of Object.entries(this.resourceTracker.players)) {
+            // 跳过当前玩家
+            if (playerName === this.resourceTracker.currentPlayer) continue;
+
             html += `
                 <div class="player-resources">
                     <div class="player-name" style="color: ${resources.color}">${playerName}</div>
-                    ${this.resourceTracker.resources
-                        .filter(resource => this.resourceTracker.showUnknown || resource !== 'unknown')
-                        .map(resource => `
-                            <span class="resource-count">
-                                ${resourceEmojis[resource]}
-                                ${resources[resource]}
-                            </span>
-                        `).join('')}
+                    <div class="resources-container">
+                        ${this.resourceTracker.resources
+                            .filter(resource => this.resourceTracker.showUnknown || resource !== 'unknown')
+                            .map(resource => `
+                                <div class="resource">
+                                    <span class="resource-emoji">${resourceEmojis[resource]}</span>
+                                    <button class="adjust-btn minus" data-player="${playerName}" data-resource="${resource}" data-action="decrease">-</button>
+                                    <span class="count">${resources[resource]}</span>
+                                    <button class="adjust-btn plus" data-player="${playerName}" data-resource="${resource}" data-action="increase">+</button>
+                                </div>
+                            `).join('')}
+                    </div>
                 </div>
             `;
         }
 
         this.trackerElement.innerHTML = html;
         this.setupCloseButton();
+        this.setupAdjustButtons();
+    }
+
+    setupAdjustButtons() {
+        const buttons = this.trackerElement.querySelectorAll('.adjust-btn');
+        buttons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const playerName = button.dataset.player;
+                const resource = button.dataset.resource;
+                const action = button.dataset.action;
+                
+                if (action === 'increase') {
+                    this.resourceTracker.updatePlayerResource(playerName, resource, 1);
+                } else {
+                    this.resourceTracker.updatePlayerResource(playerName, resource, -1);
+                }
+                
+                this.updateDisplay();
+            });
+        });
     }
 
     setupCloseButton() {
