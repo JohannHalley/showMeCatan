@@ -78,9 +78,11 @@ class DOMManager {
                             .map(resource => `
                                 <div class="resource">
                                     <span class="resource-emoji">${resourceEmojis[resource]}</span>
-                                    <button class="adjust-btn minus" data-player="${playerName}" data-resource="${resource}" data-action="decrease">-</button>
                                     <span class="count">${resources[resource]}</span>
-                                    <button class="adjust-btn plus" data-player="${playerName}" data-resource="${resource}" data-action="increase">+</button>
+                                    <div class="adjust-buttons">
+                                        <button class="adjust-btn plus" data-player="${playerName}" data-resource="${resource}" data-action="increase">+</button>
+                                        <button class="adjust-btn minus" data-player="${playerName}" data-resource="${resource}" data-action="decrease">-</button>
+                                    </div>
                                 </div>
                             `).join('')}
                     </div>

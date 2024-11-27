@@ -69,12 +69,16 @@ class ResourceTracker {
             if (playerNameElement) {
                 const playerName = playerNameElement.textContent.trim();
                 const playerColor = playerNameElement.style.color;
-                this.initializePlayer(playerName, playerColor);
                 
+                // 首先检查是否是当前玩家
                 if (board.classList.contains('current')) {
                     this.currentPlayer = playerName;
                     console.log('Current player identified:', this.currentPlayer);
+                    return; // 跳过当前玩家的初始化
                 }
+                
+                // 只为其他玩家初始化资源追踪
+                this.initializePlayer(playerName, playerColor);
             }
         });
     }

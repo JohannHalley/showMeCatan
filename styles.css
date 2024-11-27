@@ -62,11 +62,11 @@
 .resource {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   background-color: white;
   padding: 2px 3px;
   border-radius: 3px;
   border: 1px solid #eee;
+  gap: 4px;
 }
 
 .resource-emoji {
@@ -76,15 +76,31 @@
   font-size: 14px;
 }
 
+.count {
+  min-width: 16px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.adjust-buttons {
+  display: flex;
+  flex-direction: column;
+  height: 16px;
+}
+
 .adjust-btn {
-  padding: 0px 4px;
+  padding: 0;
   border: 1px solid #ddd;
   border-radius: 2px;
   background: #f8f8f8;
   cursor: pointer;
-  font-size: 11px;
-  line-height: 16px;
-  min-width: 16px;
+  font-size: 8px;
+  line-height: 7px;
+  height: 8px;
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .adjust-btn:hover {
@@ -97,10 +113,4 @@
 
 .adjust-btn.plus {
   color: #388e3c;
-}
-
-.count {
-  min-width: 16px;
-  text-align: center;
-  font-size: 12px;
 } 
